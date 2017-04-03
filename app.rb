@@ -4,6 +4,11 @@ require 'dotenv'
 require 'json'
 Dotenv.load
 
+COMMON_WORDS = /lunch|zapraszamy|smacznego/i
+FOOD_TYPES = /krem|zup[ęa]|barszcz|ziemniak| sos/i
+CHEF_NAMES = /Iwonk|Konrad|Michał/
+LUNCH_INDICATORS = Regexp.union(COMMON_WORDS, FOOD_TYPES, CHEF_NAMES)
+
 get '/' do
   access_token = ENV["ACCESS_TOKEN"]
   graph = Koala::Facebook::API.new(access_token)
@@ -12,7 +17,7 @@ get '/' do
   rescue Koala::Facebook::AuthenticationError
     halt 401, "Token do FB wygasł. Czas zaktualizować! Pingnij @RaVbaker'a o to. ;-)"
   end
-  lunch_posts = posts.select { |post| post["message"].to_s.match(/lunch|zapraszamy|smacznego|krem|zup[ęa]|barszcz|ziemniak| sos|Iwonk|Konrad|Michał/i) }
+  lunch_posts = posts.select { |post| post["message"].to_s.match(LUNCH_INDICATORS) }
   lunch_post = lunch_posts.first
   lunch_text = lunch_post["message"]
   lunch_photo = lunch_post["full_picture"]
